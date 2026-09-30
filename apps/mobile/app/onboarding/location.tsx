@@ -1,17 +1,35 @@
-import { Link } from "expo-router";
+import { router } from "expo-router";
+import { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { saveOnboardingDraft } from "../../lib/onboarding";
 
 export default function LocationScreen() {
+  const [countryCode, setCountryCode] = useState("");
+  const [region, setRegion] = useState("");
+  const [city, setCity] = useState("");
+  const [localArea, setLocalArea] = useState("");
+
+  async function next() {
+    await saveOnboardingDraft({
+      countryCode: countryCode.trim(),
+      region: region.trim(),
+      city: city.trim(),
+      localArea: localArea.trim()
+    });
+    router.push("/onboarding/interests");
+  }
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.card}>
         <Text style={styles.step}>2 of 4</Text>
         <Text style={styles.title}>Where are you located?</Text>
-        <Text style={styles.copy}>Choose the area you want Localink to use for local discovery. Exact location stays private unless you explicitly share it.</Text>
-        {["Country", "State / Province", "City", "Local area / Neighborhood"].map((p) => <TextInput key={p} placeholder={p} placeholderTextColor="#72839A" style={styles.input} />)}
-        <Link href="/onboarding/interests" asChild>
-          <TouchableOpacity style={styles.primary}><Text style={styles.primaryText}>Next</Text></TouchableOpacity>
-        </Link>
+        <Text style={styles.copy}>Choose the area Localink should use for local discovery. Exact location is not required.</Text>
+        <TextInput value={countryCode} onChangeText={setCountryCode} placeholder="Country" placeholderTextColor="#72839A" style={styles.input} />
+        <TextInput value={region} onChangeText={setRegion} placeholder="State / Province" placeholderTextColor="#72839A" style={styles.input} />
+        <TextInput value={city} onChangeText={setCity} placeholder="City" placeholderTextColor="#72839A" style={styles.input} />
+        <TextInput value={localArea} onChangeText={setLocalArea} placeholder="Local area / Neighborhood" placeholderTextColor="#72839A" style={styles.input} />
+        <TouchableOpacity style={styles.primary} onPress={next}><Text style={styles.primaryText}>Next</Text></TouchableOpacity>
       </View>
     </SafeAreaView>
   );
