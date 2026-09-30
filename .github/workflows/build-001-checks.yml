@@ -22,5 +22,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+      - name: Validate Supabase migrations
+        run: node scripts/validate-migrations.mjs
       - name: Typecheck mobile app
         run: pnpm --filter @localink/mobile typecheck
