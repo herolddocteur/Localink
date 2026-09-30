@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Localink",
+    "slug": "localink",
+    "scheme": "localink",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true },
+    "ios": { "bundleIdentifier": "com.localink.app" },
+    "android": { "package": "com.localink.app" }
+  }
+}
