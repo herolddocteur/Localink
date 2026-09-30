@@ -1,0 +1,23 @@
+import { useLocalSearchParams } from "expo-router";
+import { useEffect,useState } from "react";
+import { ActivityIndicator,Alert,SafeAreaView,ScrollView,StyleSheet,Text,TouchableOpacity,View } from "react-native";
+import { followUser,getProfile,getProfilePosts,isFollowing,unfollowUser } from "../../lib/profile";
+
+export default function PublicProfile(){
+ const {id}=useLocalSearchParams<{id:string}>();const [profile,setProfile]=useState<any>();const [posts,setPosts]=useState<any[]>([]);const [following,setFollowing]=useState(false);const [loading,setLoading]=useState(true);
+ async function load(){if(!id)return;const [p,ps,f]=await Promise.all([getProfile(id),getProfilePosts(id),isFollowing(id)]);setProfile(p);setPosts(ps);setFollowing(f);}
+ useEffect(()=>{load().catch(e=>Alert.alert("Profile unavailable",e.message)).finally(()=>setLoading(false));},[id]);
+ async function toggle(){if(!id)return;following?await unfollowUser(id):await followUser(id);setFollowing(!following);await load();}
+ if(loading)return <SafeAreaView style={styles.center}><ActivityIndicator size="large"/></SafeAreaView>;
+ if(!profile)return <SafeAreaView style={styles.center}><Text>Profile not found.</Text></SafeAreaView>;
+ const location=[profile.city,profile.region,profile.country_code].filter(Boolean).join(", ");
+ return <SafeAreaView style={styles.screen}><ScrollView>
+  <View style={styles.cover}/><View style={styles.top}><View style={styles.avatar}><Text style={styles.avatarText}>{(profile.display_name||profile.username||"L")[0].toUpperCase()}</Text></View><Text style={styles.name}>{profile.display_name}{profile.is_verified?" ✓":""}</Text><Text style={styles.username}>@{profile.username}</Text>{location&&<Text style={styles.location}>{location}</Text>}<Text style={styles.bio}>{profile.bio||"No bio yet."}</Text>
+  <View style={styles.stats}><Stat n={profile.post_count} label="Posts"/><Stat n={profile.followers} label="Followers"/><Stat n={profile.following} label="Following"/></View>
+  <View style={styles.actions}><TouchableOpacity onPress={toggle} style={styles.primary}><Text style={styles.primaryText}>{following?"Following":"Follow"}</Text></TouchableOpacity><TouchableOpacity style={styles.secondary}><Text style={styles.secondaryText}>Message</Text></TouchableOpacity></View></View>
+  <View style={styles.tabs}><Text style={styles.activeTab}>Posts</Text><Text style={styles.tab}>Communities</Text><Text style={styles.tab}>Events</Text><Text style={styles.tab}>Marketplace</Text></View>
+  <View style={styles.feed}>{posts.length===0?<Text style={styles.empty}>No posts yet.</Text>:posts.map(p=><View key={p.id} style={styles.post}><Text style={styles.postText}>{p.body||`${p.media_type||"Media"} post`}</Text><Text style={styles.date}>{new Date(p.created_at).toLocaleDateString()}</Text></View>)}</View>
+ </ScrollView></SafeAreaView>;
+}
+function Stat({n,label}:{n:number,label:string}){return <View style={styles.stat}><Text style={styles.statN}>{n}</Text><Text style={styles.statLabel}>{label}</Text></View>}
+const styles=StyleSheet.create({screen:{flex:1,backgroundColor:"#F4F7FB"},center:{flex:1,alignItems:"center",justifyContent:"center"},cover:{height:130,backgroundColor:"#071A33"},top:{backgroundColor:"#fff",padding:18,alignItems:"center"},avatar:{width:94,height:94,borderRadius:47,backgroundColor:"#1287FF",borderWidth:4,borderColor:"#fff",marginTop:-62,alignItems:"center",justifyContent:"center"},avatarText:{color:"#fff",fontSize:34,fontWeight:"800"},name:{fontSize:24,fontWeight:"800",color:"#0B1830",marginTop:8},username:{color:"#1287FF",fontWeight:"700"},location:{color:"#7B8794",marginTop:4},bio:{color:"#526173",textAlign:"center",marginTop:10,lineHeight:20},stats:{flexDirection:"row",gap:36,marginTop:18},stat:{alignItems:"center"},statN:{fontSize:18,fontWeight:"800",color:"#0B1830"},statLabel:{fontSize:12,color:"#7B8794"},actions:{flexDirection:"row",gap:10,marginTop:18,width:"100%"},primary:{flex:1,backgroundColor:"#1287FF",padding:13,borderRadius:13,alignItems:"center"},primaryText:{color:"#fff",fontWeight:"800"},secondary:{flex:1,borderWidth:1,borderColor:"#1287FF",padding:13,borderRadius:13,alignItems:"center"},secondaryText:{color:"#1287FF",fontWeight:"800"},tabs:{backgroundColor:"#fff",flexDirection:"row",justifyContent:"space-around",paddingVertical:14,borderTopWidth:1,borderTopColor:"#EEF2F6"},activeTab:{color:"#1287FF",fontWeight:"800"},tab:{color:"#7B8794",fontWeight:"700",fontSize:12},feed:{padding:14,gap:10},empty:{textAlign:"center",color:"#7B8794",padding:30},post:{backgroundColor:"#fff",borderRadius:17,padding:15},postText:{fontSize:16,color:"#17253B",lineHeight:22},date:{color:"#7B8794",fontSize:11,marginTop:8}});
