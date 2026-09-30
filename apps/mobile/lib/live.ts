@@ -1,0 +1,7 @@
+import { supabase } from "./supabase";
+async function me(){const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Not signed in");return user.id;}
+export async function getLiveStreams(){const {data,error}=await supabase.from("live_streams").select("id,creator_id,title,description,status,playback_id,viewer_count,started_at,scheduled_at").in("status",["live","scheduled"]).order("created_at",{ascending:false}).limit(50);if(error)throw error;return data??[];}
+export async function createLive(title:string,description?:string){const id=await me();const {data,error}=await supabase.from("live_streams").insert({creator_id:id,title:title.trim(),description:description?.trim()||null,status:"scheduled"}).select().single();if(error)throw error;return data;}
+export async function addLiveComment(streamId:string,body:string){const id=await me();const clean=body.trim();if(!clean)return;const {data,error}=await supabase.from("live_comments").insert({stream_id:streamId,author_id:id,body:clean}).select().single();if(error)throw error;return data;}
+export async function reactLive(streamId:string,reaction:"like"|"heart"|"clap"|"fire"){const id=await me();const {error}=await supabase.from("live_reactions").insert({stream_id:streamId,user_id:id,reaction});if(error)throw error;}
+export async function reportLive(streamId:string,reason:string,details?:string){const id=await me();const {error}=await supabase.from("live_reports").insert({stream_id:streamId,reporter_id:id,reason,details:details||null});if(error)throw error;}
