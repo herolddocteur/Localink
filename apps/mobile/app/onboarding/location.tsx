@@ -26,10 +26,10 @@ export default function LocationScreen() {
     const cleanCity = city.trim();
     const area = localArea.trim();
 
-    if (!country || !stateOrProvince || !cleanCity || !area) {
+    if (!country || !stateOrProvince || !cleanCity) {
       Alert.alert(
         "Location required",
-        "Complete Country, State / Province, City, and Local area / Neighborhood before continuing."
+        "Complete Country, State / Province, and City before continuing."
       );
       return;
     }
@@ -58,7 +58,7 @@ export default function LocationScreen() {
             <Text style={styles.step}>2 of 4 • Required</Text>
             <Text style={styles.title}>Where are you located?</Text>
             <Text style={styles.copy}>
-              All four fields are required for local discovery. Do not enter your street address.
+              Country, State / Province, and City are required. Local area / Neighborhood is optional. Do not enter your street address.
             </Text>
 
             <Text style={styles.label}>Country *</Text>
@@ -91,7 +91,7 @@ export default function LocationScreen() {
               style={styles.input}
             />
 
-            <Text style={styles.label}>Local area / Neighborhood *</Text>
+            <Text style={styles.label}>Local area / Neighborhood (optional)</Text>
             <TextInput
               value={localArea}
               onChangeText={setLocalArea}
