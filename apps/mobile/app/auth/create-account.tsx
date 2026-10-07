@@ -15,10 +15,18 @@ import {
 import { startGoogleAuth } from "../../lib/google-auth";
 import { supabase } from "../../lib/supabase";
 
-function isValidBirthday(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+function formatBirthday(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
 
-  const [year, month, day] = value.split("-").map(Number);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function parseBirthday(value: string) {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return null;
+
+  const [month, day, year] = value.split("/").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
 
   const matchesInput =
@@ -26,7 +34,7 @@ function isValidBirthday(value: string) {
     date.getUTCMonth() === month - 1 &&
     date.getUTCDate() === day;
 
-  if (!matchesInput) return false;
+  if (!matchesInput) return null;
 
   const today = new Date();
   const todayUtc = Date.UTC(
@@ -35,7 +43,9 @@ function isValidBirthday(value: string) {
     today.getUTCDate()
   );
 
-  return date.getTime() <= todayUtc;
+  if (date.getTime() > todayUtc) return null;
+
+  return `${year.toString().padStart(4, "0")}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 }
 
 export default function CreateAccountScreen() {
@@ -56,12 +66,14 @@ export default function CreateAccountScreen() {
       return null;
     }
 
-    if (!isValidBirthday(birthday)) {
-      Alert.alert("Check your birthday", "Enter a valid date of birth in YYYY-MM-DD format.");
+    const parsedBirthday = parseBirthday(birthday);
+
+    if (!parsedBirthday) {
+      Alert.alert("Check your birthday", "Enter a valid birthday in MM/DD/YYYY format.");
       return null;
     }
 
-    return birthday;
+    return parsedBirthday;
   }
 
   async function createAccount() {
@@ -190,14 +202,15 @@ export default function CreateAccountScreen() {
             <Text style={styles.requiredLabel}>Birthday *</Text>
             <TextInput
               value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-              placeholder="YYYY-MM-DD"
+              onChangeText={(value) => setDateOfBirth(formatBirthday(value))}
+              placeholder="MM/DD/YYYY"
               placeholderTextColor="#72839A"
-              keyboardType="numbers-and-punctuation"
+              keyboardType="number-pad"
+              maxLength={10}
               returnKeyType="done"
               style={styles.input}
             />
-            <Text style={styles.requiredHelp}>Required to create your account.</Text>
+            <Text style={styles.requiredHelp}>Slashes are added automatically. Required to create your account.</Text>
 
             <TouchableOpacity
               style={[styles.primary, loading && styles.disabled]}
