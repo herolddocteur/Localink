@@ -29,9 +29,9 @@ export default function PrivacyScreen() {
 
     const draft = await getOnboardingDraft();
 
-    if (!draft.username || !draft.displayName || !draft.bio || !draft.profileType) {
+    if (!draft.username || !draft.displayName || !draft.profileType) {
       setSaving(false);
-      Alert.alert("Step 1 incomplete", "Complete every required profile field before finishing setup.");
+      Alert.alert("Step 1 incomplete", "Complete the required profile fields before finishing setup.");
       router.replace("/onboarding/profile");
       return;
     }
@@ -54,7 +54,7 @@ export default function PrivacyScreen() {
       id: user.id,
       username: draft.username,
       display_name: draft.displayName,
-      bio: draft.bio,
+      bio: draft.bio || null,
       profile_type: draft.profileType,
       country_code: draft.countryCode,
       region: draft.region,
