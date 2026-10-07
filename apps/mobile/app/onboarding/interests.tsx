@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { saveOnboardingDraft } from "../../lib/onboarding";
 
 const interests = ["Travel","Food","Music","Business","Technology","Sports","Health & Fitness","Education","Photography","Fashion","Cars","Nature","Community","Gaming"];
@@ -13,6 +13,11 @@ export default function InterestsScreen() {
   }
 
   async function next() {
+    if (selected.length < 1) {
+      Alert.alert("Interest required", "Choose at least one interest before continuing.");
+      return;
+    }
+
     await saveOnboardingDraft({ interests: selected });
     router.push("/onboarding/privacy");
   }
@@ -20,8 +25,9 @@ export default function InterestsScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.card}>
-        <Text style={styles.step}>3 of 4</Text>
+        <Text style={styles.step}>3 of 4 • Required</Text>
         <Text style={styles.title}>Choose your interests</Text>
+        <Text style={styles.copy}>Select at least one interest to continue.</Text>
         <View style={styles.wrap}>
           {interests.map((item) => (
             <TouchableOpacity key={item} onPress={() => toggle(item)} style={[styles.pill, selected.includes(item) && styles.selectedPill]}>
@@ -29,7 +35,9 @@ export default function InterestsScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity style={styles.primary} onPress={next}><Text style={styles.primaryText}>Next</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.primary} onPress={next}>
+          <Text style={styles.primaryText}>Next</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -40,6 +48,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "#fff", borderRadius: 28, padding: 22, gap: 16 },
   step: { color: "#1287FF", fontWeight: "700" },
   title: { fontSize: 30, fontWeight: "800", color: "#0B1830" },
+  copy: { color: "#5E6B7A", lineHeight: 21 },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 9 },
   pill: { backgroundColor: "#EAF3FF", paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999 },
   selectedPill: { backgroundColor: "#1287FF" },
