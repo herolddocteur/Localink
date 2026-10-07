@@ -15,6 +15,29 @@ import {
 import { startGoogleAuth } from "../../lib/google-auth";
 import { supabase } from "../../lib/supabase";
 
+function isValidBirthday(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  const matchesInput =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+
+  if (!matchesInput) return false;
+
+  const today = new Date();
+  const todayUtc = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  );
+
+  return date.getTime() <= todayUtc;
+}
+
 export default function CreateAccountScreen() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +48,26 @@ export default function CreateAccountScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  function getRequiredBirthday() {
+    const birthday = dateOfBirth.trim();
+
+    if (!birthday) {
+      Alert.alert("Birthday required", "Enter your date of birth to create a Localink account.");
+      return null;
+    }
+
+    if (!isValidBirthday(birthday)) {
+      Alert.alert("Check your birthday", "Enter a valid date of birth in YYYY-MM-DD format.");
+      return null;
+    }
+
+    return birthday;
+  }
+
   async function createAccount() {
+    const birthday = getRequiredBirthday();
+    if (!birthday) return;
+
     if (!fullName.trim() || !email.trim() || password.length < 8) {
       Alert.alert("Check your information", "Enter your name, a valid email, and a password with at least 8 characters.");
       return;
@@ -43,7 +85,7 @@ export default function CreateAccountScreen() {
       options: {
         data: {
           full_name: fullName.trim(),
-          date_of_birth: dateOfBirth.trim() || null
+          date_of_birth: birthday
         }
       }
     });
@@ -58,9 +100,12 @@ export default function CreateAccountScreen() {
   }
 
   async function continueWithGoogle() {
+    const birthday = getRequiredBirthday();
+    if (!birthday) return;
+
     try {
       setGoogleLoading(true);
-      await startGoogleAuth();
+      await startGoogleAuth(birthday);
     } catch (error) {
       Alert.alert("Google sign in failed", error instanceof Error ? error.message : "Please try again.");
     } finally {
@@ -142,15 +187,17 @@ export default function CreateAccountScreen() {
               style={styles.input}
             />
 
+            <Text style={styles.requiredLabel}>Birthday *</Text>
             <TextInput
               value={dateOfBirth}
               onChangeText={setDateOfBirth}
-              placeholder="Date of birth (YYYY-MM-DD)"
+              placeholder="YYYY-MM-DD"
               placeholderTextColor="#72839A"
               keyboardType="numbers-and-punctuation"
               returnKeyType="done"
               style={styles.input}
             />
+            <Text style={styles.requiredHelp}>Required to create your account.</Text>
 
             <TouchableOpacity
               style={[styles.primary, loading && styles.disabled]}
@@ -211,6 +258,8 @@ const styles = StyleSheet.create({
   passwordInput: { flex: 1, paddingHorizontal: 14, paddingVertical: 14, color: "#0B1830" },
   passwordToggle: { paddingHorizontal: 14, paddingVertical: 14 },
   passwordToggleText: { color: "#1287FF", fontWeight: "800" },
+  requiredLabel: { color: "#0B1830", fontWeight: "800", marginBottom: -8 },
+  requiredHelp: { color: "#6E7B8A", fontSize: 12, marginTop: -8 },
   primary: { backgroundColor: "#1287FF", borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4 },
   disabled: { opacity: 0.6 },
   primaryText: { color: "#fff", fontWeight: "800", fontSize: 16 },
