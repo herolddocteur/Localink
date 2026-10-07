@@ -36,9 +36,9 @@ export default function PrivacyScreen() {
       return;
     }
 
-    if (!draft.countryCode || !draft.region || !draft.city || !draft.localArea) {
+    if (!draft.countryCode || !draft.region || !draft.city) {
       setSaving(false);
-      Alert.alert("Step 2 incomplete", "Complete every required location field before finishing setup.");
+      Alert.alert("Step 2 incomplete", "Complete Country, State / Province, and City before finishing setup.");
       router.replace("/onboarding/location");
       return;
     }
@@ -59,7 +59,7 @@ export default function PrivacyScreen() {
       country_code: draft.countryCode,
       region: draft.region,
       city: draft.city,
-      local_area: draft.localArea,
+      local_area: draft.localArea || null,
       interests: draft.interests,
       visibility: privateProfile ? "private" : "public",
       show_city: showCity,
