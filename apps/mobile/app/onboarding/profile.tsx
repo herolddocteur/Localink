@@ -37,11 +37,6 @@ export default function ProfileSetupScreen() {
       return;
     }
 
-    if (!cleanBio) {
-      Alert.alert("Bio required", "Enter a short bio before continuing.");
-      return;
-    }
-
     await saveOnboardingDraft({
       username: cleanUsername,
       displayName: cleanDisplayName,
@@ -65,7 +60,7 @@ export default function ProfileSetupScreen() {
           <View style={styles.card}>
             <Text style={styles.step}>1 of 4 • Required</Text>
             <Text style={styles.title}>Build your profile</Text>
-            <Text style={styles.copy}>Complete every field to continue.</Text>
+            <Text style={styles.copy}>Username and display name are required. Bio is optional.</Text>
 
             <Text style={styles.label}>Username *</Text>
             <TextInput
@@ -88,7 +83,7 @@ export default function ProfileSetupScreen() {
               style={styles.input}
             />
 
-            <Text style={styles.label}>Bio *</Text>
+            <Text style={styles.label}>Bio (optional)</Text>
             <TextInput
               value={bio}
               onChangeText={setBio}
