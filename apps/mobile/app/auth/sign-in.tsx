@@ -71,6 +71,8 @@ export default function SignInScreen() {
           </TouchableOpacity>
         </View>
 
+        <Link href="/auth/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
+
         <TouchableOpacity
           style={[styles.primary, loading && styles.disabled]}
           onPress={signIn}
@@ -120,6 +122,12 @@ const styles = StyleSheet.create({
   passwordToggleText: {
     color: "#1287FF",
     fontWeight: "800"
+  },
+  forgotLink: {
+    color: "#1287FF",
+    textAlign: "right",
+    fontWeight: "700",
+    marginTop: -4
   },
   primary: { backgroundColor: "#1287FF", borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4 },
   disabled: { opacity: 0.6 },
