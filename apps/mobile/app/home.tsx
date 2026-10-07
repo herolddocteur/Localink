@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FeedMode, getFeed } from "../lib/feed";
 import { likePost } from "../lib/social";
+import { supabase } from "../lib/supabase";
 
 type FeedPost = Awaited<ReturnType<typeof getFeed>>[number];
 const tabs: { label: string; mode: FeedMode }[] = [
@@ -32,6 +33,15 @@ export default function HomeScreen() {
     catch (error) { Alert.alert("Could not like post", error instanceof Error ? error.message : "Try again."); }
   }
 
+  async function openProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.replace("/auth/sign-in");
+      return;
+    }
+    router.push(`/profile/${user.id}`);
+  }
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}><Text style={styles.brand}>Localink</Text><Text style={styles.bell}>●</Text></View>
@@ -57,9 +67,25 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.bottom}>
-        <Text style={styles.bottomActive}>Home</Text><Text style={styles.bottomText}>Explore</Text>
-        <TouchableOpacity onPress={() => router.push("/create-post")}><Text style={styles.create}>＋</Text></TouchableOpacity>
-        <Text style={styles.bottomText}>Messages</Text><Text style={styles.bottomText}>Profile</Text>
+        <TouchableOpacity onPress={() => router.replace("/home")} style={styles.navItem}>
+          <Text style={styles.bottomActive}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/explore")} style={styles.navItem}>
+          <Text style={styles.bottomText}>Explore</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/create-post")}>
+          <Text style={styles.create}>＋</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/messages")} style={styles.navItem}>
+          <Text style={styles.bottomText}>Messages</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={openProfile} style={styles.navItem}>
+          <Text style={styles.bottomText}>Profile</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -71,5 +97,9 @@ const styles = StyleSheet.create({
   tab:{color:"#7B8794",fontWeight:"700",fontSize:13}, active:{color:"#1287FF"}, center:{flex:1,alignItems:"center",justifyContent:"center"}, feed:{padding:14,gap:12},
   post:{backgroundColor:"#fff",borderRadius:20,padding:16,gap:8}, name:{fontWeight:"800",fontSize:17,color:"#0B1830"}, meta:{color:"#7B8794"}, body:{color:"#17253B",fontSize:16,lineHeight:23,paddingVertical:8},
   actions:{flexDirection:"row",justifyContent:"space-between",borderTopWidth:1,borderTopColor:"#EEF2F6",paddingTop:12}, action:{color:"#526173",fontWeight:"700"}, empty:{backgroundColor:"#fff",borderRadius:20,padding:28,alignItems:"center",gap:8}, emptyTitle:{fontSize:20,fontWeight:"800",color:"#0B1830"},
-  bottom:{backgroundColor:"#fff",borderTopWidth:1,borderTopColor:"#E7ECF2",paddingVertical:10,paddingHorizontal:12,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}, bottomText:{fontSize:11,color:"#7B8794",fontWeight:"700"}, bottomActive:{fontSize:11,color:"#1287FF",fontWeight:"800"}, create:{backgroundColor:"#1287FF",color:"#fff",fontSize:28,width:48,height:48,borderRadius:24,textAlign:"center",lineHeight:45,overflow:"hidden"}
+  bottom:{backgroundColor:"#fff",borderTopWidth:1,borderTopColor:"#E7ECF2",paddingVertical:10,paddingHorizontal:12,flexDirection:"row",alignItems:"center",justifyContent:"space-between"},
+  navItem:{paddingHorizontal:4,paddingVertical:8},
+  bottomText:{fontSize:11,color:"#7B8794",fontWeight:"700"},
+  bottomActive:{fontSize:11,color:"#1287FF",fontWeight:"800"},
+  create:{backgroundColor:"#1287FF",color:"#fff",fontSize:28,width:48,height:48,borderRadius:24,textAlign:"center",lineHeight:45,overflow:"hidden"}
 });
