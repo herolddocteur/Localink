@@ -64,7 +64,7 @@ export default function ResetPasswordScreen() {
     }
 
     Linking.getInitialURL().then(openRecoverySession);
-    const subscription = Linking.addEventListener("url", ({ url }) => openRecoverySession(url));
+    const subscription = Linking.addEventListener("url", (event: { url: string }) => openRecoverySession(event.url));
 
     return () => {
       active = false;
